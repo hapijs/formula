@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 const Code = require('@hapi/code');
 const Formula = require('..');
