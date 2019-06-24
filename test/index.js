@@ -49,6 +49,57 @@ describe('Formula', () => {
         expect(formula.evaluate({ 'a.b.c.2.4.x': '2', b: 3, 'y + 4': '5' })).to.equal('123510010');
     });
 
+    describe('constructor()', () => {
+
+        it('allows valid constant', () => {
+
+            expect(() => new Formula('1 + x', { constants: { x: true } })).to.not.throw();
+            expect(() => new Formula('1 + x', { constants: { x: 1 } })).to.not.throw();
+            expect(() => new Formula('1 + x', { constants: { x: 'x' } })).to.not.throw();
+            expect(() => new Formula('1 + x', { constants: { x: null } })).to.not.throw();
+        });
+
+        it('errors on invalid constant', () => {
+
+            expect(() => new Formula('1 + x', { constants: { x: {} } })).to.throw('Formula constant x contains invalid object value type');
+            expect(() => new Formula('1 + x', { constants: { x: () => null } })).to.throw('Formula constant x contains invalid function value type');
+            expect(() => new Formula('1 + x', { constants: { x: undefined } })).to.throw('Formula constant x contains invalid undefined value type');
+        });
+    });
+
+    describe('single', () => {
+
+        it('identifies single literal (string)', () => {
+
+            const formula = new Formula('"x"');
+            expect(formula.single).to.equal({ type: 'value', value: 'x' });
+        });
+
+        it('identifies single literal (number)', () => {
+
+            const formula = new Formula('123');
+            expect(formula.single).to.equal({ type: 'value', value: 123 });
+        });
+
+        it('identifies single literal (constant)', () => {
+
+            const formula = new Formula('x', { constants: { x: 'y' } });
+            expect(formula.single).to.equal({ type: 'value', value: 'y' });
+        });
+
+        it('identifies single reference', () => {
+
+            const formula = new Formula('x');
+            expect(formula.single).to.equal({ type: 'reference', value: 'x' });
+        });
+
+        it('identifies non-single reference', () => {
+
+            const formula = new Formula('-x');
+            expect(formula.single).to.be.null();
+        });
+    });
+
     describe('_parse()', () => {
 
         it('parses multiple nested functions', () => {
@@ -80,6 +131,11 @@ describe('Formula', () => {
 
             expect(() => new Formula('[xy]', { tokenRx: /^\w+$/ })).to.not.throw();
             expect(() => new Formula('[x y]', { tokenRx: /^\w+$/ })).to.throw('Formula contains invalid reference x y');
+        });
+
+        it('errors on missing closing parenthesis', () => {
+
+            expect(() => new Formula('(a + 2(')).to.throw('Formula missing closing parenthesis');
         });
 
         it('errors on invalid character', () => {
