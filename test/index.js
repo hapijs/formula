@@ -115,6 +115,19 @@ describe('Formula', () => {
             expect(formula.evaluate()).to.equal(11 + 33 + 2 + 41 + 3 + 9);
         });
 
+        it('passes context as this to functions', () => {
+
+            const functions = {
+                x: function () {
+
+                    return this.X;
+                }
+            };
+
+            const formula = new Formula('x()', { functions });
+            expect(formula.evaluate({ X: 1 })).to.equal(1);
+        });
+
         it('parses parenthesis', () => {
 
             const formula = new Formula('(x + 4) * (x - 5) / (x ^ 2)');
