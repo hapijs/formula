@@ -4,7 +4,7 @@
 
 Math and string formula parser.
 
-[![Build Status](https://travis-ci.org/hapijs/formula.svg?branch=master)](https://travis-ci.org/hapijs/formula)
+[![Build Status](https://travis-ci.org/hapijs/formula.svg?branch=master)](https://travis-ci.org/hapijs/formula) [![Greenkeeper badge](https://badges.greenkeeper.io/hapijs/formula.svg)](https://greenkeeper.io/)
 
 ## Acknowledgements
 
