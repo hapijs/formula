@@ -24,7 +24,7 @@ describe('Formula', () => {
             Z: 100
         };
 
-        const formula = new Formula('1 + a.b.c.2.4.x + [b] + x([y + 4] + Z)', { functions, constants });
+        const formula = new Formula.Parser('1 + a.b.c.2.4.x + [b] + x([y + 4] + Z)', { functions, constants });
         expect(formula.evaluate({ 'a.b.c.2.4.x': 2, b: 3, 'y + 4': 5 })).to.equal(1 + 2 + 3 + 5 + 10 + 100);
         expect(formula.evaluate({ 'a.b.c.2.4.x': '2', b: 3, 'y + 4': '5' })).to.equal('123510010');
     });
@@ -44,7 +44,7 @@ describe('Formula', () => {
             return (context) => context[name];
         };
 
-        const formula = new Formula('1 + a.b.c.2.4.x + [b] + x([y + 4] + Z)', { functions, constants, reference });
+        const formula = new Formula.Parser('1 + a.b.c.2.4.x + [b] + x([y + 4] + Z)', { functions, constants, reference });
         expect(formula.evaluate({ 'a.b.c.2.4.x': 2, b: 3, 'y + 4': 5 })).to.equal(1 + 2 + 3 + 5 + 10 + 100);
         expect(formula.evaluate({ 'a.b.c.2.4.x': '2', b: 3, 'y + 4': '5' })).to.equal('123510010');
     });
@@ -53,17 +53,17 @@ describe('Formula', () => {
 
         it('allows valid constant', () => {
 
-            expect(() => new Formula('1 + x', { constants: { x: true } })).to.not.throw();
-            expect(() => new Formula('1 + x', { constants: { x: 1 } })).to.not.throw();
-            expect(() => new Formula('1 + x', { constants: { x: 'x' } })).to.not.throw();
-            expect(() => new Formula('1 + x', { constants: { x: null } })).to.not.throw();
+            expect(() => new Formula.Parser('1 + x', { constants: { x: true } })).to.not.throw();
+            expect(() => new Formula.Parser('1 + x', { constants: { x: 1 } })).to.not.throw();
+            expect(() => new Formula.Parser('1 + x', { constants: { x: 'x' } })).to.not.throw();
+            expect(() => new Formula.Parser('1 + x', { constants: { x: null } })).to.not.throw();
         });
 
         it('errors on invalid constant', () => {
 
-            expect(() => new Formula('1 + x', { constants: { x: {} } })).to.throw('Formula constant x contains invalid object value type');
-            expect(() => new Formula('1 + x', { constants: { x: () => null } })).to.throw('Formula constant x contains invalid function value type');
-            expect(() => new Formula('1 + x', { constants: { x: undefined } })).to.throw('Formula constant x contains invalid undefined value type');
+            expect(() => new Formula.Parser('1 + x', { constants: { x: {} } })).to.throw('Formula constant x contains invalid object value type');
+            expect(() => new Formula.Parser('1 + x', { constants: { x: () => null } })).to.throw('Formula constant x contains invalid function value type');
+            expect(() => new Formula.Parser('1 + x', { constants: { x: undefined } })).to.throw('Formula constant x contains invalid undefined value type');
         });
     });
 
@@ -71,31 +71,31 @@ describe('Formula', () => {
 
         it('identifies single literal (string)', () => {
 
-            const formula = new Formula('"x"');
+            const formula = new Formula.Parser('"x"');
             expect(formula.single).to.equal({ type: 'value', value: 'x' });
         });
 
         it('identifies single literal (number)', () => {
 
-            const formula = new Formula('123');
+            const formula = new Formula.Parser('123');
             expect(formula.single).to.equal({ type: 'value', value: 123 });
         });
 
         it('identifies single literal (constant)', () => {
 
-            const formula = new Formula('x', { constants: { x: 'y' } });
+            const formula = new Formula.Parser('x', { constants: { x: 'y' } });
             expect(formula.single).to.equal({ type: 'value', value: 'y' });
         });
 
         it('identifies single reference', () => {
 
-            const formula = new Formula('x');
+            const formula = new Formula.Parser('x');
             expect(formula.single).to.equal({ type: 'reference', value: 'x' });
         });
 
         it('identifies non-single reference', () => {
 
-            const formula = new Formula('-x');
+            const formula = new Formula.Parser('-x');
             expect(formula.single).to.be.null();
         });
     });
@@ -111,7 +111,7 @@ describe('Formula', () => {
                 a: () => 9
             };
 
-            const formula = new Formula('x(10) + y(z(30)) + z(x(40)) + a()', { functions });
+            const formula = new Formula.Parser('x(10) + y(z(30)) + z(x(40)) + a()', { functions });
             expect(formula.evaluate()).to.equal(11 + 33 + 2 + 41 + 3 + 9);
         });
 
@@ -124,52 +124,52 @@ describe('Formula', () => {
                 }
             };
 
-            const formula = new Formula('x()', { functions });
+            const formula = new Formula.Parser('x()', { functions });
             expect(formula.evaluate({ X: 1 })).to.equal(1);
         });
 
         it('parses parenthesis', () => {
 
-            const formula = new Formula('(x + 4) * (x - 5) / (x ^ 2)');
+            const formula = new Formula.Parser('(x + 4) * (x - 5) / (x ^ 2)');
             expect(formula.evaluate({ x: 10 })).to.equal((10 + 4) * (10 - 5) / (Math.pow(10, 2)));
         });
 
         it('parses string literals', () => {
 
-            const formula = new Formula('"x+3" + `y()` + \'-z\'');
+            const formula = new Formula.Parser('"x+3" + `y()` + \'-z\'');
             expect(formula.evaluate()).to.equal('x+3y()-z');
         });
 
         it('validates token', () => {
 
-            expect(() => new Formula('[xy]', { tokenRx: /^\w+$/ })).to.not.throw();
-            expect(() => new Formula('[x y]', { tokenRx: /^\w+$/ })).to.throw('Formula contains invalid reference x y');
+            expect(() => new Formula.Parser('[xy]', { tokenRx: /^\w+$/ })).to.not.throw();
+            expect(() => new Formula.Parser('[x y]', { tokenRx: /^\w+$/ })).to.throw('Formula contains invalid reference x y');
         });
 
         it('errors on missing closing parenthesis', () => {
 
-            expect(() => new Formula('(a + 2(')).to.throw('Formula missing closing parenthesis');
+            expect(() => new Formula.Parser('(a + 2(')).to.throw('Formula missing closing parenthesis');
         });
 
         it('errors on invalid character', () => {
 
-            expect(() => new Formula('x\u0000')).to.throw('Formula contains invalid token: x\u0000');
+            expect(() => new Formula.Parser('x\u0000')).to.throw('Formula contains invalid token: x\u0000');
         });
 
         it('errors on invalid operator position', () => {
 
-            expect(() => new Formula('x + + y')).to.throw('Formula contains an operator in invalid position');
-            expect(() => new Formula('x + y +')).to.throw('Formula contains invalid trailing operator');
+            expect(() => new Formula.Parser('x + + y')).to.throw('Formula contains an operator in invalid position');
+            expect(() => new Formula.Parser('x + y +')).to.throw('Formula contains invalid trailing operator');
         });
 
         it('errors on invalid operator', () => {
 
-            expect(() => new Formula('x | y')).to.throw('Formula contains an unknown operator |');
+            expect(() => new Formula.Parser('x | y')).to.throw('Formula contains an unknown operator |');
         });
 
         it('errors on invalid missing operator', () => {
 
-            expect(() => new Formula('x y')).to.throw('Formula missing expected operator');
+            expect(() => new Formula.Parser('x y')).to.throw('Formula missing expected operator');
         });
     });
 
@@ -184,7 +184,7 @@ describe('Formula', () => {
                 a: () => 9
             };
 
-            const formula = new Formula('x(10, (y((1 + 2), z(30)) + a()), z(x(4, 5, 6)))', { functions });
+            const formula = new Formula.Parser('x(10, (y((1 + 2), z(30)) + a()), z(x(4, 5, 6)))', { functions });
             expect(formula.evaluate()).to.equal(10 + (((1 + 2) * (30 + 3)) + 9) + (4 + 5 + 6) + 3);
         });
 
@@ -197,18 +197,18 @@ describe('Formula', () => {
                 a: () => 9
             };
 
-            const formula = new Formula('x("10", (y(("1" + "2"), z("30")) + a()), z(x("4", "5", "6")))', { functions });
+            const formula = new Formula.Parser('x("10", (y(("1" + "2"), z("30")) + a()), z(x("4", "5", "6")))', { functions });
             expect(formula.evaluate()).to.equal('101230394563');
         });
 
         it('errors on unknown function', () => {
 
-            expect(() => new Formula('x()')).to.throw('Formula contains unknown function x');
+            expect(() => new Formula.Parser('x()')).to.throw('Formula contains unknown function x');
         });
 
         it('errors on invalid function arguments', () => {
 
-            expect(() => new Formula('x(y,)', { functions: { x: () => null } })).to.throw('Formula contains function x with invalid arguments y,');
+            expect(() => new Formula.Parser('x(y,)', { functions: { x: () => null } })).to.throw('Formula contains function x with invalid arguments y,');
         });
     });
 
@@ -216,7 +216,7 @@ describe('Formula', () => {
 
         it('handles null constant', () => {
 
-            const formula = new Formula('0 + null', { constants: { null: null } });
+            const formula = new Formula.Parser('0 + null', { constants: { null: null } });
 
             expect(formula.evaluate()).to.equal(0);
         });
@@ -226,7 +226,7 @@ describe('Formula', () => {
 
         it('calculates -', () => {
 
-            const formula = new Formula('-x');
+            const formula = new Formula.Parser('-x');
 
             expect(formula.evaluate({ x: 1 })).to.equal(-1);
             expect(formula.evaluate({ x: -1 })).to.equal(1);
@@ -235,7 +235,7 @@ describe('Formula', () => {
 
         it('handles --', () => {
 
-            const formula = new Formula('10--x');
+            const formula = new Formula.Parser('10--x');
 
             expect(formula.evaluate({ x: 1 })).to.equal(11);
             expect(formula.evaluate({ x: -1 })).to.equal(9);
@@ -244,7 +244,7 @@ describe('Formula', () => {
 
         it('calculates !', () => {
 
-            const formula = new Formula('!x');
+            const formula = new Formula.Parser('!x');
 
             expect(formula.evaluate({ x: 1 })).to.equal(false);
             expect(formula.evaluate({ x: -1 })).to.equal(false);
@@ -256,7 +256,7 @@ describe('Formula', () => {
 
         it('calculates +', () => {
 
-            const formula = new Formula('x+y');
+            const formula = new Formula.Parser('x+y');
 
             expect(formula.evaluate({ x: 1, y: 2 })).to.equal(3);
             expect(formula.evaluate({ y: 2 })).to.equal(2);
@@ -276,7 +276,7 @@ describe('Formula', () => {
 
         it('calculates -', () => {
 
-            const formula = new Formula('x-y');
+            const formula = new Formula.Parser('x-y');
 
             expect(formula.evaluate({ x: 1, y: 2 })).to.equal(-1);
             expect(formula.evaluate({ y: 2 })).to.equal(-2);
@@ -296,7 +296,7 @@ describe('Formula', () => {
 
         it('calculates *', () => {
 
-            const formula = new Formula('x*y');
+            const formula = new Formula.Parser('x*y');
 
             expect(formula.evaluate({ x: 20, y: 10 })).to.equal(200);
             expect(formula.evaluate({ y: 2 })).to.equal(0);
@@ -316,7 +316,7 @@ describe('Formula', () => {
 
         it('calculates /', () => {
 
-            const formula = new Formula('x/y');
+            const formula = new Formula.Parser('x/y');
 
             expect(formula.evaluate({ x: 20, y: 10 })).to.equal(2);
             expect(formula.evaluate({ y: 2 })).to.equal(0);
@@ -336,7 +336,7 @@ describe('Formula', () => {
 
         it('calculates ^', () => {
 
-            const formula = new Formula('x^y');
+            const formula = new Formula.Parser('x^y');
 
             expect(formula.evaluate({ x: 2, y: 3 })).to.equal(8);
             expect(formula.evaluate({ y: 2 })).to.equal(0);
@@ -356,7 +356,7 @@ describe('Formula', () => {
 
         it('calculates %', () => {
 
-            const formula = new Formula('x%y');
+            const formula = new Formula.Parser('x%y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(1);
             expect(formula.evaluate({ y: 2 })).to.equal(0);
@@ -376,7 +376,7 @@ describe('Formula', () => {
 
         it('compares <', () => {
 
-            const formula = new Formula('x<y');
+            const formula = new Formula.Parser('x<y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(false);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(false);
@@ -405,7 +405,7 @@ describe('Formula', () => {
 
         it('compares >', () => {
 
-            const formula = new Formula('x>y');
+            const formula = new Formula.Parser('x>y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(true);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(false);
@@ -434,7 +434,7 @@ describe('Formula', () => {
 
         it('compares <=', () => {
 
-            const formula = new Formula('x<=y');
+            const formula = new Formula.Parser('x<=y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(false);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(true);
@@ -463,7 +463,7 @@ describe('Formula', () => {
 
         it('compares >=', () => {
 
-            const formula = new Formula('x>=y');
+            const formula = new Formula.Parser('x>=y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(true);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(true);
@@ -492,7 +492,7 @@ describe('Formula', () => {
 
         it('compares ==', () => {
 
-            const formula = new Formula('x==y');
+            const formula = new Formula.Parser('x==y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(false);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(true);
@@ -521,7 +521,7 @@ describe('Formula', () => {
 
         it('compares !=', () => {
 
-            const formula = new Formula('x!=y');
+            const formula = new Formula.Parser('x!=y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(true);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(false);
@@ -550,7 +550,7 @@ describe('Formula', () => {
 
         it('applies logical ||', () => {
 
-            const formula = new Formula('x || y');
+            const formula = new Formula.Parser('x || y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(10);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(10);
@@ -583,7 +583,7 @@ describe('Formula', () => {
 
         it('applies logical &&', () => {
 
-            const formula = new Formula('x && y');
+            const formula = new Formula.Parser('x && y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(3);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(10);
@@ -616,7 +616,7 @@ describe('Formula', () => {
 
         it('applies logical ??', () => {
 
-            const formula = new Formula('x ?? y');
+            const formula = new Formula.Parser('x ?? y');
 
             expect(formula.evaluate({ x: 10, y: 3 })).to.equal(10);
             expect(formula.evaluate({ x: 10, y: 10 })).to.equal(10);
