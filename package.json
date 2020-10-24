@@ -1,8 +1,8 @@
 {
-    "name": "@hapi/formula",
+    "name": "@sideway/formula",
     "description": "Math and string formula parser.",
     "version": "3.0.0",
-    "repository": "git://github.com/hapijs/formula",
+    "repository": "git://github.com/sideway/formula",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "keywords": [
@@ -16,8 +16,9 @@
     ],
     "dependencies": {},
     "devDependencies": {
+        "typescript": "4.0.x",
         "@hapi/code": "8.x.x",
-        "@hapi/lab": "22.x.x"
+        "@hapi/lab": "24.x.x"
     },
     "scripts": {
         "test": "lab -a @hapi/code -t 100 -L -Y",
