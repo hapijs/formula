@@ -1,7 +1,7 @@
 {
     "name": "@sideway/formula",
     "description": "Math and string formula parser.",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "repository": "git://github.com/sideway/formula",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
