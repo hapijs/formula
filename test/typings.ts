@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
-import * as Formula from '../lib/index.js';
+import * as Formula from '../src/index.mjs';
 
 describe('typings', () => {
     describe('Parser', () => {

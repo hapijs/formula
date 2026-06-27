@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import * as Formula from '../lib/index.js';
+import * as Formula from '../src/index.mjs';
 
 describe('Formula', () => {
     it('evaluates a formula', () => {
