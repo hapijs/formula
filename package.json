@@ -12,8 +12,7 @@
     "repository": "git://github.com/hapijs/formula",
     "files": [
         "src",
-        "API.md",
-        "README.md"
+        "API.md"
     ],
     "type": "module",
     "types": "src/index.d.ts",
