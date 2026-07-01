@@ -10,8 +10,8 @@ const literals = {
     '[': ']',
 };
 
-const numberRx = /^(?:[0-9]*(\.[0-9]*)?){1}$/;
-const tokenRx = /^[\w\$\#\.\@\:\{\}]+$/;
+const numberRx = /^(?:[0-9]*(\.[0-9]*)?)$/;
+const tokenRx = /^[\w$#.@:{}]+$/;
 
 const symbol = Symbol('formula');
 const settingsSymbol = Symbol('settings');
@@ -335,7 +335,7 @@ function evaluate(part, context) {
 
 function single(operator, value) {
     if (operator === '!') {
-        return value ? false : true;
+        return !value;
     }
 
     // operator === 'n'
