@@ -1,6 +1,6 @@
 {
     "name": "@hapi/formula",
-    "version": "3.0.2",
+    "version": "4.0.0",
     "description": "Math and string formula parser.",
     "keywords": [
         "formula",
