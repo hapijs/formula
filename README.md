@@ -1,4 +1,4 @@
-# @sideway/formula
+# @hapi/formula
 
 #### Math and string formula parser.
 
